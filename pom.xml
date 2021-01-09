@@ -11,6 +11,7 @@
 	<groupId>com.jd.httpservice</groupId>
 	<artifactId>httpservice</artifactId>
 	<version>1.4.0.RELEASE</version>
+	<packaging>pom</packaging>
 
 	<properties>
 		<utils.version>1.4.0.RELEASE</utils.version>
@@ -19,6 +20,6 @@
 	<modules>
 		<module>httpservice-agent</module>
 		<module>httpservice-utils</module>
-	<modules>
+	</modules>
 
 </project>
