@@ -4,11 +4,11 @@
 	<parent>
 		<groupId>com.jd.httpservice</groupId>
 		<artifactId>httpservice</artifactId>
-		<version>1.4.0.RELEASE</version>
+		<version>1.4.1.RELEASE</version>
 	</parent>
 
 	<artifactId>httpservice-agent</artifactId>
-	<version>1.4.0.RELEASE</version>
+	<version>1.4.1.RELEASE</version>
 
 	<properties>
 		<utils.version>1.4.0.RELEASE</utils.version>
