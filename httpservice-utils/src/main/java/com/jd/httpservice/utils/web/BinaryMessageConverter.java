@@ -13,7 +13,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 
-import com.jd.blockchain.utils.serialize.binary.BinarySerializeUtils;
+import utils.serialize.binary.BinarySerializeUtils;
 
 /**
  * 针对二进制对象的序列化和反序列化的 HTTP 消息转换器；

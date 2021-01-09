@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
-import com.jd.blockchain.utils.serialize.json.JSONSerializeUtils;
 import com.jd.httpservice.HttpServiceConsts;
 import com.jd.httpservice.RequestBodyConverter;
+
+import utils.serialize.json.JSONSerializeUtils;
 
 public class JsonBodyConverter implements RequestBodyConverter {
 	

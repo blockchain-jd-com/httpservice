@@ -3,8 +3,9 @@ package com.jd.httpservice.agent;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import com.jd.blockchain.utils.io.RuntimeIOException;
 import com.jd.httpservice.HttpServiceException;
+
+import utils.io.RuntimeIOException;
 
 class RequestBodyResolvers {
 

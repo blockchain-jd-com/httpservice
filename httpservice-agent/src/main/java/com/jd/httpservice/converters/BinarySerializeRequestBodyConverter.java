@@ -11,8 +11,9 @@ package com.jd.httpservice.converters;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import com.jd.blockchain.utils.serialize.binary.BinarySerializeUtils;
 import com.jd.httpservice.RequestBodyConverter;
+
+import utils.serialize.binary.BinarySerializeUtils;
 
 public class BinarySerializeRequestBodyConverter implements RequestBodyConverter {
 

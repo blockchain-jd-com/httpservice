@@ -1,7 +1,8 @@
 package com.jd.httpservice.converters;
 
-import com.jd.blockchain.utils.serialize.json.JSONSerializeUtils;
 import com.jd.httpservice.StringConverter;
+
+import utils.serialize.json.JSONSerializeUtils;
 
 /**
  * JSON 格式的参数转换器；

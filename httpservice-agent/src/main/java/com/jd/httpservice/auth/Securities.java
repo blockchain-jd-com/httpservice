@@ -1,6 +1,6 @@
 package com.jd.httpservice.auth;
 
-import com.jd.blockchain.utils.security.ShaUtils;
+import utils.security.ShaUtils;
 
 public class Securities {
 	

@@ -18,15 +18,16 @@ import org.junit.Test;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.jd.blockchain.utils.io.BytesUtils;
-import com.jd.blockchain.utils.security.ShaUtils;
-import com.jd.blockchain.utils.serialize.binary.BinarySerializeUtils;
-import com.jd.blockchain.utils.web.server.WebServer;
 import com.jd.httpservice.HttpMethod;
 import com.jd.httpservice.agent.AuthorizationAlgs;
 import com.jd.httpservice.agent.AuthorizationHeader;
 import com.jd.httpservice.agent.HttpServiceAgent;
 import com.jd.httpservice.agent.ServiceEndpoint;
+
+import utils.io.BytesUtils;
+import utils.security.ShaUtils;
+import utils.serialize.binary.BinarySerializeUtils;
+import utils.web.server.WebServer;
 
 public class HttpServiceAgentTest {
 

@@ -9,7 +9,8 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
-import com.jd.blockchain.utils.serialize.json.JSONSerializeUtils;
+
+import utils.serialize.json.JSONSerializeUtils;
 
 public class JsonWebResponseMessageConverter extends FastJsonHttpMessageConverter {
 

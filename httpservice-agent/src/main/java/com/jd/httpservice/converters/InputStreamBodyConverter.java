@@ -4,8 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.jd.blockchain.utils.io.BytesUtils;
 import com.jd.httpservice.RequestBodyConverter;
+
+import utils.io.BytesUtils;
 
 public class InputStreamBodyConverter implements RequestBodyConverter{
 

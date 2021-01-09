@@ -2,13 +2,14 @@ package com.jd.httpservice.utils.agent;
 
 import java.io.InputStream;
 
-import com.jd.blockchain.utils.PrimitiveUtils;
-import com.jd.blockchain.utils.serialize.json.JSONSerializeUtils;
 import com.jd.httpservice.HttpServiceContext;
 import com.jd.httpservice.ResponseConverter;
 import com.jd.httpservice.agent.ServiceRequest;
 import com.jd.httpservice.converters.JsonResponseConverter;
 import com.jd.httpservice.utils.web.WebResponse;
+
+import utils.PrimitiveUtils;
+import utils.serialize.json.JSONSerializeUtils;
 
 public class WebResponseConverter implements ResponseConverter {
 	

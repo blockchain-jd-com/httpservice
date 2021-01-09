@@ -10,10 +10,11 @@ package com.jd.httpservice.converters;
 
 import java.io.InputStream;
 
-import com.jd.blockchain.utils.serialize.binary.BinarySerializeUtils;
 import com.jd.httpservice.HttpServiceContext;
 import com.jd.httpservice.ResponseConverter;
 import com.jd.httpservice.agent.ServiceRequest;
+
+import utils.serialize.binary.BinarySerializeUtils;
 
 public class BinarySerializeResponseConverter implements ResponseConverter {
 

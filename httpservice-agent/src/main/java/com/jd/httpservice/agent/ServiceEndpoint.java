@@ -2,7 +2,7 @@ package com.jd.httpservice.agent;
 
 import org.springframework.util.StringUtils;
 
-import com.jd.blockchain.utils.net.NetworkAddress;
+import utils.net.NetworkAddress;
 
 /**
  * 服务器设置；

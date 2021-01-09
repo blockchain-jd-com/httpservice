@@ -11,9 +11,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.jd.blockchain.utils.io.ByteArray;
-import com.jd.blockchain.utils.io.BytesUtils;
 import com.jd.httpservice.HttpMethod;
+
+import utils.io.ByteArray;
+import utils.io.BytesUtils;
 
 public class HttpRequestCollector extends HttpServlet{
 

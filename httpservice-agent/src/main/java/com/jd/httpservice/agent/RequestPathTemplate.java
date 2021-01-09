@@ -10,8 +10,9 @@ import java.util.Map.Entry;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 
-import com.jd.blockchain.utils.PathUtils;
 import com.jd.httpservice.NamedParamMap;
+
+import utils.PathUtils;
 
 class RequestPathTemplate {
 //	private ServiceEndpoint serviceEndpoint;
