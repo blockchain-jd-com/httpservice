@@ -1,4 +1,4 @@
-package com.jd.blockchain.utils.web.model;
+package com.jd.httpservice.utils.web;
 
 import java.io.Externalizable;
 import java.io.IOException;

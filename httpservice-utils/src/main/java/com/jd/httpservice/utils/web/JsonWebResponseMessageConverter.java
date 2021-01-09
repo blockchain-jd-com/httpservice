@@ -1,4 +1,4 @@
-package com.jd.blockchain.utils.web.model;
+package com.jd.httpservice.utils.web;
 
 import java.io.IOException;
 import java.lang.reflect.Field;

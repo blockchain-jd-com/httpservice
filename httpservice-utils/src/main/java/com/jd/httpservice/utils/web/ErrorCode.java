@@ -1,4 +1,4 @@
-package com.jd.blockchain.utils.web.model;
+package com.jd.httpservice.utils.web;
 
 /**
  * 错误代码；

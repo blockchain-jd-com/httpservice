@@ -1,4 +1,4 @@
-package com.jd.blockchain.utils.web.client;
+package com.jd.httpservice.utils.agent;
 
 import com.jd.httpservice.HttpServiceException;
 
