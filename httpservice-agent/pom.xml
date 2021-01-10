@@ -9,10 +9,6 @@
 
 	<artifactId>httpservice-agent</artifactId>
 
-	<properties>
-		<utils.version>1.4.1.RELEASE</utils.version>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.jd.blockchain</groupId>
