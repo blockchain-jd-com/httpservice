@@ -14,7 +14,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<utils.version>2.1.0-SNAPSHOT</utils.version>
+		<utils.version>2.0.3.RELEASE</utils.version>
 	</properties>
 
 	<modules>
