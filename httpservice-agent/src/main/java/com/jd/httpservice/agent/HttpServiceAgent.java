@@ -551,11 +551,8 @@ public class HttpServiceAgent {
 			if (contentTypeHeaders == null || contentTypeHeaders.length == 0) {
 				httpRequest.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 			}
-			CloseableHttpClient closeableHttpClient = HttpClientPool.getHttpClient(serviceEndpoint.getHost(),
-					serviceEndpoint.getPort());
 
-			CloseableHttpResponse response = closeableHttpClient.execute(httpRequest);
-//			CloseableHttpResponse response = httpClient.execute(httpRequest);
+			CloseableHttpResponse response = httpClient.execute(httpRequest);
 			try {
 				// 引发 http 异常；
 				if (response.getStatusLine().getStatusCode() >= 400) {
