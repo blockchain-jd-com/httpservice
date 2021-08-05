@@ -33,7 +33,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.jd.httpservice.HttpAction;
@@ -63,7 +62,7 @@ import com.jd.httpservice.converters.StringResponseConverter;
  *
  */
 public class HttpServiceAgent {
-	
+
 	private static final NamedParam[] EMPTY_PARAMS = {};
 
 	private static Map<Class<?>, HttpServiceAgent> serviceAgentMap = new ConcurrentHashMap<Class<?>, HttpServiceAgent>();
@@ -80,8 +79,7 @@ public class HttpServiceAgent {
 
 	private Map<Method, ServiceActionContext> actions = new HashMap<>();
 
-	private HttpServiceAgent(Class<?> serviceClass, 
-			AuthorizationHeaderResovler authResolver) {
+	private HttpServiceAgent(Class<?> serviceClass, AuthorizationHeaderResovler authResolver) {
 		this.serviceClass = serviceClass;
 		this.authorizationHeaderResolver = authResolver;
 
@@ -91,12 +89,9 @@ public class HttpServiceAgent {
 	/**
 	 * 创建映射指定服务接口的 HTTP 服务代理；
 	 * 
-	 * @param serviceClass
-	 *            服务的接口类型；
-	 * @param serviceEndpoint
-	 *            连接到服务提供者服务器的相关设置；
-	 * @param authorizationHeader
-	 *            安全认证头部；
+	 * @param serviceClass        服务的接口类型；
+	 * @param serviceEndpoint     连接到服务提供者服务器的相关设置；
+	 * @param authorizationHeader 安全认证头部；
 	 * @return
 	 */
 	public static <T> T createService(Class<T> serviceClass, ServiceEndpoint serviceEndpoint,
@@ -107,10 +102,8 @@ public class HttpServiceAgent {
 	/**
 	 * 创建映射指定服务接口的 HTTP 服务代理；
 	 * 
-	 * @param serviceClass
-	 *            服务的接口类型；
-	 * @param serviceEndpoint
-	 *            服务终结点；
+	 * @param serviceClass    服务的接口类型；
+	 * @param serviceEndpoint 服务终结点；
 	 * @return
 	 */
 	public static <T> T createService(Class<T> serviceClass, ServiceEndpoint serviceEndpoint) {
@@ -120,12 +113,9 @@ public class HttpServiceAgent {
 	/**
 	 * 创建映射指定服务接口的 HTTP 服务代理；
 	 * 
-	 * @param serviceClass
-	 *            定义了服务的接口类型；
-	 * @param serviceEndpoint
-	 *            服务终结点；
-	 * @param authorizationHeaderResolver
-	 *            安全认证头部的解析器；
+	 * @param serviceClass                定义了服务的接口类型；
+	 * @param serviceEndpoint             服务终结点；
+	 * @param authorizationHeaderResolver 安全认证头部的解析器；
 	 * @return
 	 */
 	public static <T> T createService(Class<T> serviceClass, ServiceEndpoint serviceEndpoint,
@@ -136,16 +126,11 @@ public class HttpServiceAgent {
 	/**
 	 * 创建映射指定服务接口的 HTTP 服务代理；
 	 * 
-	 * @param serviceClass
-	 *            定义了服务的接口类型；
-	 * @param serviceEndpoint
-	 *            服务终结点；
-	 * @param connectionManager
-	 *            连接管理器；
-	 * @param authorizationHeaderResolver
-	 *            安全认证头部的解析器；
-	 * @param headers
-	 *            请求头部；
+	 * @param serviceClass                定义了服务的接口类型；
+	 * @param serviceEndpoint             服务终结点；
+	 * @param connectionManager           连接管理器；
+	 * @param authorizationHeaderResolver 安全认证头部的解析器；
+	 * @param headers                     请求头部；
 	 * @return
 	 */
 	public static <T> T createService(Class<T> serviceClass, ServiceEndpoint serviceEndpoint,
@@ -163,16 +148,11 @@ public class HttpServiceAgent {
 	/**
 	 * 创建映射指定服务接口的 HTTP 服务代理；
 	 * 
-	 * @param serviceClass
-	 *            定义了服务的接口类型；
-	 * @param serviceEndpoint
-	 *            服务终结点；
-	 * @param connectionManager
-	 *            连接管理器；
-	 * @param authorizationHeaderResolver
-	 *            安全认证头部的解析器；
-	 * @param headers
-	 *            请求头部；
+	 * @param serviceClass                定义了服务的接口类型；
+	 * @param serviceEndpoint             服务终结点；
+	 * @param connectionManager           连接管理器；
+	 * @param authorizationHeaderResolver 安全认证头部的解析器；
+	 * @param headers                     请求头部；
 	 * @return
 	 */
 	public static <T> T createService(Class<T> serviceClass, ServiceConnection connection,
@@ -183,20 +163,15 @@ public class HttpServiceAgent {
 	/**
 	 * 创建映射指定服务接口的 HTTP 服务代理；
 	 * 
-	 * @param serviceClass
-	 *            定义了服务的接口类型；
-	 * @param serviceEndpoint
-	 *            服务终结点；
-	 * @param connectionManager
-	 *            连接管理器；
-	 * @param authorizationHeaderResolver
-	 *            安全认证头部的解析器；
-	 * @param headers
-	 *            请求头部；
-	 * @param bindingData
-	 *            由调用者指定的绑定对象；<br>
-	 *            该对象将被关联到 HttpServiceContext 上；调用者可以通过此对象将某些数据对象传递到调用过程的一些处理组件上，例如
-	 *            {@link ResponseConverter}；
+	 * @param serviceClass                定义了服务的接口类型；
+	 * @param serviceEndpoint             服务终结点；
+	 * @param connectionManager           连接管理器；
+	 * @param authorizationHeaderResolver 安全认证头部的解析器；
+	 * @param headers                     请求头部；
+	 * @param bindingData                 由调用者指定的绑定对象；<br>
+	 *                                    该对象将被关联到 HttpServiceContext
+	 *                                    上；调用者可以通过此对象将某些数据对象传递到调用过程的一些处理组件上，例如
+	 *                                    {@link ResponseConverter}；
 	 * @return
 	 */
 	public static <T> T createService(Class<T> serviceClass, ServiceConnection connection,
@@ -223,13 +198,13 @@ public class HttpServiceAgent {
 
 		// CloseableHttpClient httpClient = createHttpClient(serviceEndpoint,
 		// connectionManager);
-		
+
 		ServiceInvocationHandler invocationHandler = new ServiceInvocationHandler(agent, httpConnection, headers,
 				bindingData);
 
 		@SuppressWarnings("unchecked")
-		T serviceProxy = (T) Proxy.newProxyInstance(serviceClass.getClassLoader(), new Class<?>[] { serviceClass },
-				invocationHandler);
+		T serviceProxy = (T) Proxy.newProxyInstance(serviceClass.getClassLoader(),
+				new Class<?>[] { HttpServiceProxy.class, serviceClass }, invocationHandler);
 		return serviceProxy;
 	}
 
@@ -249,16 +224,18 @@ public class HttpServiceAgent {
 
 		// 实例化服务的默认请求体参数转换器；
 		Class<?> defaultRequestBodyConverterClazz = serviceAnno.defaultRequestBodyConverter();
-		if (defaultRequestBodyConverterClazz != null && defaultRequestBodyConverterClazz != RequestBodyConverter.class) {
+		if (defaultRequestBodyConverterClazz != null
+				&& defaultRequestBodyConverterClazz != RequestBodyConverter.class) {
 			if (RequestBodyConverter.class.isAssignableFrom(defaultRequestBodyConverterClazz)) {
-				defaultRequestBodyConverter = (RequestBodyConverter) BeanUtils.instantiate(defaultRequestBodyConverterClazz);
+				defaultRequestBodyConverter = (RequestBodyConverter) BeanUtils
+						.instantiate(defaultRequestBodyConverterClazz);
 			} else {
 				throw new IllegalHttpServiceDefinitionException(
 						"The specified default request body converter of service doesn't implement the interface "
 								+ RequestBodyConverter.class.getName() + "!");
 			}
 		}
-		
+
 		// 实例化服务的默认回复转换器；
 		Class<?> defaultResponseConverterClazz = serviceAnno.defaultResponseConverter();
 		if (defaultResponseConverterClazz != null && defaultResponseConverterClazz != ResponseConverter.class) {
@@ -271,7 +248,8 @@ public class HttpServiceAgent {
 			}
 		}
 		Class<?> responseConverterFactoryClazz = serviceAnno.responseConverterFactory();
-		if (responseConverterFactoryClazz != null && responseConverterFactoryClazz != ResponseBodyConverterFactory.class) {
+		if (responseConverterFactoryClazz != null
+				&& responseConverterFactoryClazz != ResponseBodyConverterFactory.class) {
 			if (ResponseBodyConverterFactory.class.isAssignableFrom(responseConverterFactoryClazz)) {
 				this.responseConverterFactory = (ResponseBodyConverterFactory) BeanUtils
 						.instantiate(responseConverterFactoryClazz);
@@ -287,7 +265,7 @@ public class HttpServiceAgent {
 //		Method[] mths = ReflectionUtils.getAllDeclaredMethods(serviceClass);
 		Method[] mths = serviceClass.getMethods();
 		for (Method mth : mths) {
-			ServiceActionContext actionContext = resolveAction( mth, servicePath);
+			ServiceActionContext actionContext = resolveAction(mth, servicePath);
 			if (actionContext != null) {
 				actions.put(mth, actionContext);
 			}
@@ -356,7 +334,8 @@ public class HttpServiceAgent {
 //				throw new IllegalHttpServiceDefinitionException("Define more than one request body for the action!");
 //			}
 			if (reqBodyAnno != null) {
-				RequestBodyResolver reqBodyResolver = createBodyResolver(new ArgDefEntry<RequestBody>(i, paramTypes[i], reqBodyAnno));
+				RequestBodyResolver reqBodyResolver = createBodyResolver(
+						new ArgDefEntry<RequestBody>(i, paramTypes[i], reqBodyAnno));
 				bodyResolverComposite.addRequestBodyResolver(reqBodyResolver);
 			}
 			if (reqParamAnno != null) {
@@ -379,8 +358,8 @@ public class HttpServiceAgent {
 		Class<?>[] thrownExceptionTypes = mth.getExceptionTypes();
 
 		ServiceActionContext actionContext = new ServiceActionContext(mth, actionAnno.method(), contentType,
-				pathTemplate, pathParamResolver, reqParamFilter, reqParamResolver, bodyResolverComposite, responseConverter,
-				thrownExceptionTypes, actionAnno.resolveContentOnHttpError());
+				pathTemplate, pathParamResolver, reqParamFilter, reqParamResolver, bodyResolverComposite,
+				responseConverter, thrownExceptionTypes, actionAnno.resolveContentOnHttpError());
 		return actionContext;
 	}
 
@@ -546,8 +525,8 @@ public class HttpServiceAgent {
 	/**
 	 * 解析被调用的方法，映射为 http 请求；
 	 */
-	private Object invoke(ServiceEndpoint serviceEndpoint, HttpServiceContext serviceContext, CloseableHttpClient httpClient, RequestHeader[] headers,
-			Method method, Object[] args) throws Throwable {
+	private Object invoke(ServiceEndpoint serviceEndpoint, HttpServiceContext serviceContext,
+			CloseableHttpClient httpClient, RequestHeader[] headers, Method method, Object[] args) throws Throwable {
 		ServiceActionContext actionContext = actions.get(method);
 		if (actionContext == null) {
 			throw new UnsupportedOperationException("The invoked method was not a service action!");
@@ -572,10 +551,8 @@ public class HttpServiceAgent {
 			if (contentTypeHeaders == null || contentTypeHeaders.length == 0) {
 				httpRequest.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 			}
-			CloseableHttpClient closeableHttpClient = HttpClientPool.getHttpClient(serviceEndpoint.getHost(), serviceEndpoint.getPort());
 
-			CloseableHttpResponse response = closeableHttpClient.execute(httpRequest);
-//			CloseableHttpResponse response = httpClient.execute(httpRequest);
+			CloseableHttpResponse response = httpClient.execute(httpRequest);
 			try {
 				// 引发 http 异常；
 				if (response.getStatusLine().getStatusCode() >= 400) {
@@ -663,7 +640,8 @@ public class HttpServiceAgent {
 		throw new HttpStatusException(response.getStatusLine().getStatusCode(), errMsg);
 	}
 
-	private HttpServiceRequest resolveRequest(ServiceEndpoint serviceEndpoint, ServiceActionContext actionContext, Object[] args) throws IOException {
+	private HttpServiceRequest resolveRequest(ServiceEndpoint serviceEndpoint, ServiceActionContext actionContext,
+			Object[] args) throws IOException {
 		HttpServiceRequest request;
 		switch (actionContext.getRequestMethod()) {
 		case GET:
@@ -823,8 +801,8 @@ public class HttpServiceAgent {
 	// ByteBuffer.wrap(bytes));
 	// }
 
-	private HttpServiceRequest resolvePostOrPutRequest(ServiceEndpoint serviceEndpoint, ServiceActionContext actionContext, Object[] args)
-			throws IOException {
+	private HttpServiceRequest resolvePostOrPutRequest(ServiceEndpoint serviceEndpoint,
+			ServiceActionContext actionContext, Object[] args) throws IOException {
 		// 解析路径参数；
 		Map<String, String> pathParams = actionContext.getPathParamResolver().resolve(args);
 		HttpMethod httpMethod = actionContext.getRequestMethod();
@@ -843,15 +821,15 @@ public class HttpServiceAgent {
 
 		// 如果只有 RequestBody 标注的参数，则以 RequestBody 参数的序列化输出作为请求体；
 		if ((!noBody) && noReqParams) {
-			URI uri = actionContext.getPathTemplate().generateRequestURI(serviceEndpoint, pathParams, new NamedParamMap(),
-					ServiceActionContext.DEFAULT_CHARSET);
+			URI uri = actionContext.getPathTemplate().generateRequestURI(serviceEndpoint, pathParams,
+					new NamedParamMap(), ServiceActionContext.DEFAULT_CHARSET);
 			ByteBuffer body = ByteBuffer.wrap(bodyBytes);
 			return new HttpServiceRequest(httpMethod, uri, null, body, args);
 		}
 		// 如果没有 RequestBody 标注的参数，只有 RequestParam ，则 RequestParam 通过请求体以表单格式提交；
 		if (noBody && (!noReqParams)) {
-			URI uri = actionContext.getPathTemplate().generateRequestURI(serviceEndpoint, pathParams, new NamedParamMap(),
-					ServiceActionContext.DEFAULT_CHARSET);
+			URI uri = actionContext.getPathTemplate().generateRequestURI(serviceEndpoint, pathParams,
+					new NamedParamMap(), ServiceActionContext.DEFAULT_CHARSET);
 			return new HttpServiceRequest(httpMethod, uri, reqParams, null, args);
 		}
 
@@ -877,7 +855,8 @@ public class HttpServiceAgent {
 	 * @param args
 	 * @return
 	 */
-	private HttpServiceRequest resolveGetRequest(ServiceEndpoint serviceEndpoint, ServiceActionContext actionContext, Object[] args) {
+	private HttpServiceRequest resolveGetRequest(ServiceEndpoint serviceEndpoint, ServiceActionContext actionContext,
+			Object[] args) {
 		Map<String, String> pathParams = actionContext.getPathParamResolver().resolve(args);
 		NamedParamMap reqParams = actionContext.getRequestParamResolver().resolve(args);
 		URI uri = actionContext.getPathTemplate().generateRequestURI(serviceEndpoint, pathParams, reqParams,
@@ -894,8 +873,8 @@ public class HttpServiceAgent {
 	 * @return
 	 * @throws IOException
 	 */
-	private HttpServiceRequest resolveDeleteRequest(ServiceEndpoint serviceEndpoint, ServiceActionContext actionContext, Object[] args)
-			throws IOException {
+	private HttpServiceRequest resolveDeleteRequest(ServiceEndpoint serviceEndpoint, ServiceActionContext actionContext,
+			Object[] args) throws IOException {
 		Map<String, String> pathParams = actionContext.getPathParamResolver().resolve(args);
 
 		NamedParamMap reqParams = actionContext.getRequestParamResolver().resolve(args);
@@ -911,8 +890,8 @@ public class HttpServiceAgent {
 		return new HttpServiceRequest(HttpMethod.DELETE, uri, null, body, args);
 	}
 
-	private static class ServiceInvocationHandler implements InvocationHandler, HttpServiceContext {
-		
+	private static class ServiceInvocationHandler implements InvocationHandler, HttpServiceContext, HttpServiceProxy {
+
 		private HttpServiceAgent serviceAgent;
 
 		private HttpServiceConnection connection;
@@ -931,7 +910,11 @@ public class HttpServiceAgent {
 
 		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-			return serviceAgent.invoke(connection.getEndpoint(), this, connection.getHttpClient(), headers, method, args);
+			if (method.getDeclaringClass() == HttpServiceProxy.class) {
+				return method.invoke(this, args);
+			}
+			return serviceAgent.invoke(connection.getEndpoint(), this, connection.getHttpClient(), headers, method,
+					args);
 		}
 
 		@Override
@@ -944,8 +927,19 @@ public class HttpServiceAgent {
 			return bindingData;
 		}
 
+		@Override
+		public ServiceEndpoint getServiceEndpoint() {
+			return connection.getEndpoint();
+		}
+
+		@Override
+		public void close() throws IOException {
+			connection.close();
+			;
+		}
 	}
 
+	@SuppressWarnings("unused")
 	private static class HttpServiceContextImpl implements HttpServiceContext {
 
 		private Class<?> serviceClass;
