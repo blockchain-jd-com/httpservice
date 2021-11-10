@@ -1,16 +1,11 @@
 package com.jd.httpservice.agent;
 
-import java.io.Closeable;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
+import com.jd.httpservice.auth.SSLSecurity;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -18,120 +13,204 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+import java.io.Closeable;
+import java.io.FileInputStream;
+import java.security.KeyStore;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+
 public class ServiceConnectionManager implements Closeable {
 
-	private PoolingHttpClientConnectionManager connectionMananeger;
+    /**
+     * 重新验证方法，取消SSL验证（信任所有证书）
+     */
+    private static TrustManager trustManager = new X509TrustManager() {
 
-	public ServiceConnectionManager() {
-		this.connectionMananeger = new PoolingHttpClientConnectionManager();
-		setMaxTotal(100).setDefaultMaxPerRoute(20);
-	}
+        @Override
+        public void checkClientTrusted(X509Certificate[] ax509certificate, String s) {
+        }
 
-	public ServiceConnectionManager setMaxTotal(int maxConn) {
-		connectionMananeger.setMaxTotal(maxConn);
-		return this;
-	}
+        @Override
+        public void checkServerTrusted(X509Certificate[] ax509certificate, String s) {
+        }
 
-	public ServiceConnectionManager setDefaultMaxPerRoute(int maxConnPerRoute) {
-		connectionMananeger.setDefaultMaxPerRoute(maxConnPerRoute);
-		return this;
-	}
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
 
-	HttpClientConnectionManager getHttpConnectionManager() {
-		return connectionMananeger;
-	}
+    };
+    private PoolingHttpClientConnectionManager connectionManager;
 
-	/**
-	 * 创建一个受此连接管理器管理的连接；
-	 * 
-	 * @param endpoint
-	 * @return
-	 */
-	public ServiceConnection create(ServiceEndpoint serviceEndpoint) {
-		CloseableHttpClient httpClient = createHttpClient(serviceEndpoint, this);
-		return new HttpServiceConnection(serviceEndpoint, httpClient);
-	}
+    public ServiceConnectionManager() {
+        this(new SSLSecurity());
+    }
 
-	/**
-	 * 创建一个不受管理的连接；
-	 * 
-	 * @param serviceEndpoint
-	 * @return
-	 */
-	public static ServiceConnection connect(ServiceEndpoint serviceEndpoint) {
-		CloseableHttpClient httpClient = createHttpClient(serviceEndpoint, null);
-		return new HttpServiceConnection(serviceEndpoint, httpClient);
-	}
+    public ServiceConnectionManager(SSLSecurity security) {
+        Registry<ConnectionSocketFactory> factories = null;
+        switch (security.getSslMode()) {
+            case OFF:
+                factories = RegistryBuilder.<ConnectionSocketFactory>create()
+                        .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                        .register("https", createSSLIgnoreConnectionSocketFactory())
+                        .build();
+                break;
+            case ON_WAY:
+                factories = RegistryBuilder.<ConnectionSocketFactory>create()
+                        .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                        .register("https", createOneWaySSLConnectionSocketFactory(security))
+                        .build();
+                break;
+            case TWO_WAY:
+                factories = RegistryBuilder.<ConnectionSocketFactory>create()
+                        .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                        .register("https", createTwoWaySSLConnectionSocketFactory(security))
+                        .build();
+                break;
+        }
+        this.connectionManager = new PoolingHttpClientConnectionManager(factories);
 
-	@Override
-	public void close() {
-		PoolingHttpClientConnectionManager cm = connectionMananeger;
-		if (cm != null) {
-			connectionMananeger = null;
-			cm.close();
-		}
-	}
+        setMaxTotal(100).setDefaultMaxPerRoute(20);
+    }
 
-	private static CloseableHttpClient createHttpClient(ServiceEndpoint serviceEndpoint,
-			ServiceConnectionManager connectionManager) {
-		try {
-			HttpClientBuilder httpClientBuilder = HttpClients.custom();
+    /**
+     * 创建一个不受管理的连接；
+     *
+     * @param serviceEndpoint
+     * @return
+     */
+    public static ServiceConnection connect(ServiceEndpoint serviceEndpoint) {
+        CloseableHttpClient httpClient = createHttpClient();
+        return new HttpServiceConnection(serviceEndpoint, httpClient);
+    }
 
-			if (connectionManager != null) {
-				HttpClientConnectionManager httpConnMng = connectionManager.getHttpConnectionManager();
-				httpClientBuilder.setConnectionManager(httpConnMng).setConnectionManagerShared(true);
-			}
+    private static CloseableHttpClient createHttpClient(ServiceConnectionManager connectionManager) {
+        HttpClientBuilder httpClientBuilder = HttpClients.custom();
+        HttpClientConnectionManager httpConnMng = connectionManager.getHttpConnectionManager();
+        httpClientBuilder.setConnectionManager(httpConnMng).setConnectionManagerShared(true);
+        return httpClientBuilder.build();
+    }
 
-			if (serviceEndpoint.isSecure()) {
-				httpClientBuilder.setSSLSocketFactory(createSSLConnectionSocketFactory());
-			}
+    private static CloseableHttpClient createHttpClient() {
+        return HttpClients.custom().build();
+    }
 
-			return httpClientBuilder.build();
-		} catch (KeyManagementException e) {
-			throw new IllegalStateException(e.getMessage(), e);
-		} catch (NoSuchAlgorithmException e) {
-			throw new IllegalStateException(e.getMessage(), e);
-		}
-	}
+    /**
+     * 创建忽略证书的SSL安全连接
+     *
+     * @return
+     */
+    private static SSLConnectionSocketFactory createSSLIgnoreConnectionSocketFactory() {
+        try {
+            SSLContext context = SSLContext.getInstance("TLS");
+            context.init(null, new TrustManager[]{trustManager}, null);
+            return new SSLConnectionSocketFactory(context, NoopHostnameVerifier.INSTANCE);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
 
-	/**
-	 * 创建SSL安全连接
-	 * 
-	 * @return
-	 * @throws NoSuchAlgorithmException
-	 * @throws KeyManagementException
-	 */
-	private static SSLConnectionSocketFactory createSSLConnectionSocketFactory()
-			throws NoSuchAlgorithmException, KeyManagementException {
-		SSLConnectionSocketFactory sslsf = null;
-		SSLContext context = SSLContext.getInstance("TLS");
-		context.init(null, new TrustManager[] { trustManager }, null);
-		sslsf = new SSLConnectionSocketFactory(context, NoopHostnameVerifier.INSTANCE);
-		return sslsf;
-	}
+    /**
+     * 创建SSL单向安全连接
+     *
+     * @return
+     */
+    private static SSLConnectionSocketFactory createOneWaySSLConnectionSocketFactory(SSLSecurity security) {
+        try {
+            // 创建信任库管理工厂实例
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            // 信任库类型
+            KeyStore trustStore = KeyStore.getInstance("JKS");
+            // 加载信任库，即服务端公钥
+            trustStore.load(new FileInputStream(security.getTrustStore()), security.getTrustStorePassword().toCharArray());
+            // 初始化信任库
+            tmf.init(trustStore);
+            TrustManager[] tms = tmf.getTrustManagers();
+            // 建立TLS连接
+            SSLContext context = SSLContext.getInstance("TLS");
+            // 初始化SSLContext
+            context.init(null, tms, new SecureRandom());
 
-	/**
-	 * 重新验证方法，取消SSL验证（信任所有证书）
-	 */
-	private static TrustManager trustManager = new X509TrustManager() {
+            return new SSLConnectionSocketFactory(context);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
 
-		@Override
-		public void checkClientTrusted(X509Certificate[] ax509certificate, String s) throws CertificateException {
-			// TODO Auto-generated method stub
+    /**
+     * 创建SSL双向安全连接
+     *
+     * @return
+     */
+    private static SSLConnectionSocketFactory createTwoWaySSLConnectionSocketFactory(SSLSecurity security) {
+        try {
+            // 客户端证书类型
+            KeyStore clientStore = KeyStore.getInstance(security.getTrustStoreType());
+            // 加载客户端证书，即自己的私钥
+            clientStore.load(new FileInputStream(security.getKeyStore()), security.getKeyStorePassword().toCharArray());
+            // 创建密钥管理工厂实例
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            // 初始化客户端密钥库
+            kmf.init(clientStore, security.getKeyStorePassword().toCharArray());
+            KeyManager[] kms = kmf.getKeyManagers();
+            // 创建信任库管理工厂实例
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            // 信任库类型
+            KeyStore trustStore = KeyStore.getInstance(security.getTrustStoreType());
+            // 加载信任库，即服务端公钥
+            trustStore.load(new FileInputStream(security.getTrustStore()), security.getTrustStorePassword().toCharArray());
+            // 初始化信任库
+            tmf.init(trustStore);
+            TrustManager[] tms = tmf.getTrustManagers();
+            // 建立TLS连接
+            SSLContext context = SSLContext.getInstance("TLS");
+            // 初始化SSLContext
+            context.init(kms, tms, new SecureRandom());
 
-		}
+            return new SSLConnectionSocketFactory(context);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
 
-		@Override
-		public void checkServerTrusted(X509Certificate[] ax509certificate, String s) throws CertificateException {
-			// TODO Auto-generated method stub
+    public ServiceConnectionManager setMaxTotal(int maxConn) {
+        connectionManager.setMaxTotal(maxConn);
+        return this;
+    }
 
-		}
+    public ServiceConnectionManager setDefaultMaxPerRoute(int maxConnPerRoute) {
+        connectionManager.setDefaultMaxPerRoute(maxConnPerRoute);
+        return this;
+    }
 
-		@Override
-		public X509Certificate[] getAcceptedIssuers() {
-			return null;
-		}
+    HttpClientConnectionManager getHttpConnectionManager() {
+        return connectionManager;
+    }
 
-	};
+    /**
+     * 创建一个受此连接管理器管理的连接
+     *
+     * @param serviceEndpoint
+     * @return
+     */
+    public ServiceConnection create(ServiceEndpoint serviceEndpoint) {
+        CloseableHttpClient httpClient = createHttpClient(this);
+        return new HttpServiceConnection(serviceEndpoint, httpClient);
+    }
+
+    @Override
+    public void close() {
+        PoolingHttpClientConnectionManager cm = connectionManager;
+        if (cm != null) {
+            connectionManager = null;
+            cm.close();
+        }
+    }
 
 }
