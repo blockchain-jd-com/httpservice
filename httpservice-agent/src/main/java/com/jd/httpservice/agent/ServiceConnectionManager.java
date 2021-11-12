@@ -86,8 +86,23 @@ public class ServiceConnectionManager implements Closeable {
      * @return
      */
     public static ServiceConnection connect(ServiceEndpoint serviceEndpoint) {
-        CloseableHttpClient httpClient = createHttpClient();
-        return new HttpServiceConnection(serviceEndpoint, httpClient);
+        SSLSecurity sslSecurity = serviceEndpoint.getSslSecurity();
+        SSLConnectionSocketFactory csf = null;
+        switch (sslSecurity.getSslMode()) {
+            case OFF:
+                csf = createSSLIgnoreConnectionSocketFactory();
+                break;
+            case ON_WAY:
+                csf = createOneWaySSLConnectionSocketFactory(sslSecurity);
+                break;
+            case TWO_WAY:
+                csf = createTwoWaySSLConnectionSocketFactory(sslSecurity);
+                break;
+        }
+
+        HttpClientBuilder httpClientBuilder = HttpClients.custom();
+        httpClientBuilder.setSSLSocketFactory(csf);
+        return new HttpServiceConnection(serviceEndpoint, httpClientBuilder.build());
     }
 
     private static CloseableHttpClient createHttpClient(ServiceConnectionManager connectionManager) {
@@ -95,10 +110,6 @@ public class ServiceConnectionManager implements Closeable {
         HttpClientConnectionManager httpConnMng = connectionManager.getHttpConnectionManager();
         httpClientBuilder.setConnectionManager(httpConnMng).setConnectionManagerShared(true);
         return httpClientBuilder.build();
-    }
-
-    private static CloseableHttpClient createHttpClient() {
-        return HttpClients.custom().build();
     }
 
     /**

@@ -49,7 +49,9 @@ public class ServiceEndpoint extends NetworkAddress implements Cloneable {
     @Override
     public ServiceEndpoint clone() {
         try {
-            return (ServiceEndpoint) super.clone();
+            ServiceEndpoint endpoint = (ServiceEndpoint) super.clone();
+            endpoint.setSslSecurity(this.sslSecurity);
+            return endpoint;
         } catch (CloneNotSupportedException e) {
             throw new UnsupportedOperationException(e.getMessage(), e);
         }

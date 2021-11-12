@@ -13,7 +13,7 @@ public class SSLSecurity {
     // keystore 路径
     private String keyStore;
     // key别名
-    private String keyStoreAlias;
+    private String keyAlias;
     // 密码
     private String keyStorePassword;
     // 信任库路径
@@ -27,19 +27,19 @@ public class SSLSecurity {
         this.sslMode = SSLMode.OFF;
     }
 
-    public SSLSecurity(SSLMode sslMode, String keyStoreType, String keyStore, String keyStoreAlias, String keyStorePassword) {
+    public SSLSecurity(SSLMode sslMode, String keyStoreType, String keyStore, String keyAlias, String keyStorePassword) {
         this.sslMode = sslMode;
         this.keyStoreType = keyStoreType;
         this.keyStore = keyStore;
-        this.keyStoreAlias = keyStoreAlias;
+        this.keyAlias = keyAlias;
         this.keyStorePassword = keyStorePassword;
     }
 
-    public SSLSecurity(SSLMode sslMode, String keyStoreType, String keyStore, String keyStoreAlias, String keyStorePassword, String trustStore, String trustStorePassword, String trustStoreType) {
+    public SSLSecurity(SSLMode sslMode, String keyStoreType, String keyStore, String keyAlias, String keyStorePassword, String trustStore, String trustStorePassword, String trustStoreType) {
         this.sslMode = sslMode;
         this.keyStoreType = keyStoreType;
         this.keyStore = keyStore;
-        this.keyStoreAlias = keyStoreAlias;
+        this.keyAlias = keyAlias;
         this.keyStorePassword = keyStorePassword;
         this.trustStore = trustStore;
         this.trustStorePassword = trustStorePassword;
@@ -78,12 +78,12 @@ public class SSLSecurity {
         this.keyStore = keyStore;
     }
 
-    public String getKeyStoreAlias() {
-        return keyStoreAlias;
+    public String getKeyAlias() {
+        return keyAlias;
     }
 
-    public void setKeyStoreAlias(String keyStoreAlias) {
-        this.keyStoreAlias = keyStoreAlias;
+    public void setKeyAlias(String keyAlias) {
+        this.keyAlias = keyAlias;
     }
 
     public String getKeyStorePassword() {
