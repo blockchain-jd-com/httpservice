@@ -1,6 +1,5 @@
 package com.jd.httpservice.agent;
 
-import com.jd.httpservice.auth.SSLSecurity;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -12,6 +11,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import utils.StringUtils;
+import utils.net.SSLSecurity;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -54,14 +55,14 @@ public class ServiceConnectionManager implements Closeable {
 
     public ServiceConnectionManager(SSLSecurity security) {
         Registry<ConnectionSocketFactory> factories = null;
-        switch (security.getSslMode()) {
+        switch (security.getSslMode(true)) {
             case OFF:
                 factories = RegistryBuilder.<ConnectionSocketFactory>create()
                         .register("http", PlainConnectionSocketFactory.getSocketFactory())
                         .register("https", createSSLIgnoreConnectionSocketFactory())
                         .build();
                 break;
-            case ON_WAY:
+            case ONE_WAY:
                 factories = RegistryBuilder.<ConnectionSocketFactory>create()
                         .register("http", PlainConnectionSocketFactory.getSocketFactory())
                         .register("https", createOneWaySSLConnectionSocketFactory(security))
@@ -86,22 +87,23 @@ public class ServiceConnectionManager implements Closeable {
      * @return
      */
     public static ServiceConnection connect(ServiceEndpoint serviceEndpoint) {
-        SSLSecurity sslSecurity = serviceEndpoint.getSslSecurity();
-        SSLConnectionSocketFactory csf = null;
-        switch (sslSecurity.getSslMode()) {
-            case OFF:
-                csf = createSSLIgnoreConnectionSocketFactory();
-                break;
-            case ON_WAY:
-                csf = createOneWaySSLConnectionSocketFactory(sslSecurity);
-                break;
-            case TWO_WAY:
-                csf = createTwoWaySSLConnectionSocketFactory(sslSecurity);
-                break;
-        }
-
         HttpClientBuilder httpClientBuilder = HttpClients.custom();
-        httpClientBuilder.setSSLSocketFactory(csf);
+        if (serviceEndpoint.isSecure()) {
+            SSLSecurity sslSecurity = serviceEndpoint.getSslSecurity();
+            SSLConnectionSocketFactory csf = null;
+            switch (sslSecurity.getSslMode(true)) {
+                case OFF:
+                    csf = createSSLIgnoreConnectionSocketFactory();
+                    break;
+                case ONE_WAY:
+                    csf = createOneWaySSLConnectionSocketFactory(sslSecurity);
+                    break;
+                case TWO_WAY:
+                    csf = createTwoWaySSLConnectionSocketFactory(sslSecurity);
+                    break;
+            }
+            httpClientBuilder.setSSLSocketFactory(csf);
+        }
         return new HttpServiceConnection(serviceEndpoint, httpClientBuilder.build());
     }
 
@@ -161,15 +163,18 @@ public class ServiceConnectionManager implements Closeable {
      */
     private static SSLConnectionSocketFactory createTwoWaySSLConnectionSocketFactory(SSLSecurity security) {
         try {
-            // 客户端证书类型
-            KeyStore clientStore = KeyStore.getInstance(security.getTrustStoreType());
-            // 加载客户端证书，即自己的私钥
-            clientStore.load(new FileInputStream(security.getKeyStore()), security.getKeyStorePassword().toCharArray());
-            // 创建密钥管理工厂实例
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            // 初始化客户端密钥库
-            kmf.init(clientStore, security.getKeyStorePassword().toCharArray());
-            KeyManager[] kms = kmf.getKeyManagers();
+            KeyManager[] kms = null;
+            if (!StringUtils.isEmpty(security.getKeyStore())) {
+                // 客户端证书类型
+                KeyStore clientStore = KeyStore.getInstance(security.getTrustStoreType());
+                // 加载客户端证书，即自己的私钥
+                clientStore.load(new FileInputStream(security.getKeyStore()), security.getKeyStorePassword().toCharArray());
+                // 创建密钥管理工厂实例
+                KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                // 初始化客户端密钥库
+                kmf.init(clientStore, security.getKeyStorePassword().toCharArray());
+                kms = kmf.getKeyManagers();
+            }
             // 创建信任库管理工厂实例
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             // 信任库类型

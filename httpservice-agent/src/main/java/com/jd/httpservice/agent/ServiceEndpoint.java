@@ -1,6 +1,6 @@
 package com.jd.httpservice.agent;
 
-import com.jd.httpservice.auth.SSLSecurity;
+import utils.net.SSLSecurity;
 import org.springframework.util.StringUtils;
 import utils.net.NetworkAddress;
 
