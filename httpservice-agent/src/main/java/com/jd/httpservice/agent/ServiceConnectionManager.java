@@ -12,6 +12,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import utils.StringUtils;
+import utils.net.SSLMode;
 import utils.net.SSLSecurity;
 
 import javax.net.ssl.KeyManager;
@@ -50,30 +51,27 @@ public class ServiceConnectionManager implements Closeable {
     private PoolingHttpClientConnectionManager connectionManager;
 
     public ServiceConnectionManager() {
-        this(new SSLSecurity());
+        this(false, new SSLSecurity());
     }
 
-    public ServiceConnectionManager(SSLSecurity security) {
-        Registry<ConnectionSocketFactory> factories = null;
-        switch (security.getSslMode(true)) {
-            case OFF:
-                factories = RegistryBuilder.<ConnectionSocketFactory>create()
-                        .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                        .register("https", createSSLIgnoreConnectionSocketFactory())
-                        .build();
-                break;
-            case ONE_WAY:
-                factories = RegistryBuilder.<ConnectionSocketFactory>create()
-                        .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                        .register("https", createOneWaySSLConnectionSocketFactory(security))
-                        .build();
-                break;
-            case TWO_WAY:
-                factories = RegistryBuilder.<ConnectionSocketFactory>create()
-                        .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                        .register("https", createTwoWaySSLConnectionSocketFactory(security))
-                        .build();
-                break;
+    public ServiceConnectionManager(boolean secure, SSLSecurity security) {
+        Registry<ConnectionSocketFactory> factories;
+        SSLMode sslMode = security.getSslMode(true);
+        if (!secure || sslMode.equals(SSLMode.OFF)) {
+            factories = RegistryBuilder.<ConnectionSocketFactory>create()
+                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                    .register("https", createSSLIgnoreConnectionSocketFactory())
+                    .build();
+        } else if (sslMode.equals(SSLMode.ONE_WAY)) {
+            factories = RegistryBuilder.<ConnectionSocketFactory>create()
+                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                    .register("https", createOneWaySSLConnectionSocketFactory(security))
+                    .build();
+        } else {
+            factories = RegistryBuilder.<ConnectionSocketFactory>create()
+                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                    .register("https", createTwoWaySSLConnectionSocketFactory(security))
+                    .build();
         }
         this.connectionManager = new PoolingHttpClientConnectionManager(factories);
 
