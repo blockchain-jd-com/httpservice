@@ -85,6 +85,16 @@ public class ServiceConnectionManager implements Closeable {
      * @return
      */
     public static ServiceConnection connect(ServiceEndpoint serviceEndpoint) {
+        return new HttpServiceConnection(serviceEndpoint, buildHttpClient(serviceEndpoint));
+    }
+
+    /**
+     * 构建HTTP连接客户端
+     *
+     * @param serviceEndpoint
+     * @return
+     */
+    public static CloseableHttpClient buildHttpClient(ServiceEndpoint serviceEndpoint) {
         HttpClientBuilder httpClientBuilder = HttpClients.custom();
         if (serviceEndpoint.isSecure()) {
             SSLSecurity sslSecurity = serviceEndpoint.getSslSecurity();
@@ -102,7 +112,7 @@ public class ServiceConnectionManager implements Closeable {
             }
             httpClientBuilder.setSSLSocketFactory(csf);
         }
-        return new HttpServiceConnection(serviceEndpoint, httpClientBuilder.build());
+        return httpClientBuilder.build();
     }
 
     private static CloseableHttpClient createHttpClient(ServiceConnectionManager connectionManager) {
