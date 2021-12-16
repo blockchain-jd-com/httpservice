@@ -15,12 +15,7 @@ import utils.StringUtils;
 import utils.net.SSLMode;
 import utils.net.SSLSecurity;
 
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import java.io.Closeable;
 import java.io.FileInputStream;
 import java.security.KeyStore;
@@ -60,7 +55,7 @@ public class ServiceConnectionManager implements Closeable {
         if (!secure || sslMode.equals(SSLMode.OFF)) {
             factories = RegistryBuilder.<ConnectionSocketFactory>create()
                     .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                    .register("https", createSSLIgnoreConnectionSocketFactory())
+                    .register("https", createSSLIgnoreConnectionSocketFactory(security))
                     .build();
         } else if (sslMode.equals(SSLMode.ONE_WAY)) {
             factories = RegistryBuilder.<ConnectionSocketFactory>create()
@@ -101,7 +96,7 @@ public class ServiceConnectionManager implements Closeable {
             SSLConnectionSocketFactory csf = null;
             switch (sslSecurity.getSslMode(true)) {
                 case OFF:
-                    csf = createSSLIgnoreConnectionSocketFactory();
+                    csf = createSSLIgnoreConnectionSocketFactory(sslSecurity);
                     break;
                 case ONE_WAY:
                     csf = createOneWaySSLConnectionSocketFactory(sslSecurity);
@@ -127,11 +122,11 @@ public class ServiceConnectionManager implements Closeable {
      *
      * @return
      */
-    private static SSLConnectionSocketFactory createSSLIgnoreConnectionSocketFactory() {
+    private static SSLConnectionSocketFactory createSSLIgnoreConnectionSocketFactory(SSLSecurity security) {
         try {
-            SSLContext context = SSLContext.getInstance("TLS");
+            SSLContext context = SSLContext.getInstance(security.getProtocol());
             context.init(null, new TrustManager[]{trustManager}, null);
-            return new SSLConnectionSocketFactory(context, NoopHostnameVerifier.INSTANCE);
+            return new SSLConnectionSocketFactory(context, security.getEnabledProtocols(), security.getCiphers(), NoopHostnameVerifier.INSTANCE);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -147,18 +142,18 @@ public class ServiceConnectionManager implements Closeable {
             // 创建信任库管理工厂实例
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             // 信任库类型
-            KeyStore trustStore = KeyStore.getInstance("JKS");
+            KeyStore trustStore = KeyStore.getInstance(security.getTrustStoreType());
             // 加载信任库，即服务端公钥
             trustStore.load(new FileInputStream(security.getTrustStore()), security.getTrustStorePassword().toCharArray());
             // 初始化信任库
             tmf.init(trustStore);
             TrustManager[] tms = tmf.getTrustManagers();
             // 建立TLS连接
-            SSLContext context = SSLContext.getInstance("TLS");
+            SSLContext context = SSLContext.getInstance(security.getProtocol());
             // 初始化SSLContext
             context.init(null, tms, new SecureRandom());
 
-            return new SSLConnectionSocketFactory(context);
+            return new SSLConnectionSocketFactory(context, security.getEnabledProtocols(), security.getCiphers(), SSLConnectionSocketFactory.getDefaultHostnameVerifier());
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -174,7 +169,7 @@ public class ServiceConnectionManager implements Closeable {
             KeyManager[] kms = null;
             if (!StringUtils.isEmpty(security.getKeyStore())) {
                 // 客户端证书类型
-                KeyStore clientStore = KeyStore.getInstance(security.getTrustStoreType());
+                KeyStore clientStore = KeyStore.getInstance(security.getKeyStoreType());
                 // 加载客户端证书，即自己的私钥
                 clientStore.load(new FileInputStream(security.getKeyStore()), security.getKeyStorePassword().toCharArray());
                 // 创建密钥管理工厂实例
@@ -193,11 +188,11 @@ public class ServiceConnectionManager implements Closeable {
             tmf.init(trustStore);
             TrustManager[] tms = tmf.getTrustManagers();
             // 建立TLS连接
-            SSLContext context = SSLContext.getInstance("TLS");
+            SSLContext context = SSLContext.getInstance(security.getProtocol());
             // 初始化SSLContext
             context.init(kms, tms, new SecureRandom());
 
-            return new SSLConnectionSocketFactory(context);
+            return new SSLConnectionSocketFactory(context, security.getEnabledProtocols(), security.getCiphers(), SSLConnectionSocketFactory.getDefaultHostnameVerifier());
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
