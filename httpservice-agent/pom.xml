@@ -26,6 +26,11 @@
 			<scope>test</scope>
 			<version>${utils.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.jd.utils</groupId>
+			<artifactId>utils-sm-tls</artifactId>
+			<version>${utils.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>

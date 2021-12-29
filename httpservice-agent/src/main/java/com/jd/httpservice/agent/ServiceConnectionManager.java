@@ -11,6 +11,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import utils.GmSSLProvider;
 import utils.StringUtils;
 import utils.net.SSLMode;
 import utils.net.SSLSecurity;
@@ -126,7 +127,7 @@ public class ServiceConnectionManager implements Closeable {
         try {
             SSLContext context = SSLContext.getInstance(security.getProtocol());
             context.init(null, new TrustManager[]{trustManager}, null);
-            return new SSLConnectionSocketFactory(context, security.getEnabledProtocols(), security.getCiphers(), NoopHostnameVerifier.INSTANCE);
+            return createSSLConnectionSocketFactory(context, security);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -153,7 +154,8 @@ public class ServiceConnectionManager implements Closeable {
             // 初始化SSLContext
             context.init(null, tms, new SecureRandom());
 
-            return new SSLConnectionSocketFactory(context, security.getEnabledProtocols(), security.getCiphers(), SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+            return createSSLConnectionSocketFactory(context, security);
+
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -192,11 +194,23 @@ public class ServiceConnectionManager implements Closeable {
             // 初始化SSLContext
             context.init(kms, tms, new SecureRandom());
 
-            return new SSLConnectionSocketFactory(context, security.getEnabledProtocols(), security.getCiphers(), SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+            return createSSLConnectionSocketFactory(context, security);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
+
+
+    private static SSLConnectionSocketFactory createSSLConnectionSocketFactory(SSLContext context, SSLSecurity security){
+
+        HostnameVerifier hostnameVerifier = security.isNoopHostnameVerifier() ? NoopHostnameVerifier.INSTANCE : SSLConnectionSocketFactory.getDefaultHostnameVerifier();
+
+        if(GmSSLProvider.isGMSSL(security.getProtocol())){
+            return new SSLConnectionSocketFactory(context, GmSSLProvider.ENABLE_PROTOCOLS, GmSSLProvider.ENABLE_CIPHERS, hostnameVerifier);
+        }
+        return new SSLConnectionSocketFactory(context, security.getEnabledProtocols(), security.getCiphers(), hostnameVerifier);
+    }
+
 
     public ServiceConnectionManager setMaxTotal(int maxConn) {
         connectionManager.setMaxTotal(maxConn);
