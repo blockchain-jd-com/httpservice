@@ -28,7 +28,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.jd.utils</groupId>
-			<artifactId>utils-sm-tls</artifactId>
+			<artifactId>utils-crypto-sm</artifactId>
 			<version>${utils.version}</version>
 		</dependency>
 

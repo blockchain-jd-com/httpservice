@@ -11,7 +11,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import utils.GmSSLProvider;
 import utils.StringUtils;
 import utils.net.SSLMode;
 import utils.net.SSLSecurity;
@@ -204,9 +203,6 @@ public class ServiceConnectionManager implements Closeable {
 
         HostnameVerifier hostnameVerifier = security.isNoopHostnameVerifier() ? NoopHostnameVerifier.INSTANCE : SSLConnectionSocketFactory.getDefaultHostnameVerifier();
 
-        if(GmSSLProvider.isGMSSL(security.getProtocol())){
-            return new SSLConnectionSocketFactory(context, GmSSLProvider.ENABLE_PROTOCOLS, GmSSLProvider.ENABLE_CIPHERS, hostnameVerifier);
-        }
         return new SSLConnectionSocketFactory(context, security.getEnabledProtocols(), security.getCiphers(), hostnameVerifier);
     }
 
