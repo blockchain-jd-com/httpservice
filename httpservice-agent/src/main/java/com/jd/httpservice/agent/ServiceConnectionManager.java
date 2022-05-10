@@ -12,6 +12,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import utils.StringUtils;
+import utils.crypto.sm.GmSSLProvider;
 import utils.net.SSLMode;
 import utils.net.SSLSecurity;
 
@@ -124,6 +125,9 @@ public class ServiceConnectionManager implements Closeable {
      */
     private static SSLConnectionSocketFactory createSSLIgnoreConnectionSocketFactory(SSLSecurity security) {
         try {
+            if (GmSSLProvider.isGMSSL(security.getProtocol())) {
+                GmSSLProvider.enableGMSupport(security.getProtocol());
+            }
             SSLContext context = SSLContext.getInstance(security.getProtocol());
             context.init(null, new TrustManager[]{trustManager}, null);
             return createSSLConnectionSocketFactory(context, security);
@@ -139,6 +143,9 @@ public class ServiceConnectionManager implements Closeable {
      */
     private static SSLConnectionSocketFactory createOneWaySSLConnectionSocketFactory(SSLSecurity security) {
         try {
+            if (GmSSLProvider.isGMSSL(security.getProtocol())) {
+                GmSSLProvider.enableGMSupport(security.getProtocol());
+            }
             // 创建信任库管理工厂实例
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             // 信任库类型
@@ -166,6 +173,9 @@ public class ServiceConnectionManager implements Closeable {
      */
     private static SSLConnectionSocketFactory createTwoWaySSLConnectionSocketFactory(SSLSecurity security) {
         try {
+            if (GmSSLProvider.isGMSSL(security.getProtocol())) {
+                GmSSLProvider.enableGMSupport(security.getProtocol());
+            }
             KeyManager[] kms = null;
             if (!StringUtils.isEmpty(security.getKeyStore())) {
                 // 客户端证书类型
@@ -199,7 +209,7 @@ public class ServiceConnectionManager implements Closeable {
     }
 
 
-    private static SSLConnectionSocketFactory createSSLConnectionSocketFactory(SSLContext context, SSLSecurity security){
+    private static SSLConnectionSocketFactory createSSLConnectionSocketFactory(SSLContext context, SSLSecurity security) {
 
         HostnameVerifier hostnameVerifier = security.isNoopHostnameVerifier() ? NoopHostnameVerifier.INSTANCE : SSLConnectionSocketFactory.getDefaultHostnameVerifier();
 
